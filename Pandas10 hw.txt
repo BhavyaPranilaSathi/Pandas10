@@ -1,0 +1,92 @@
+Pandas10
+
+1 Problem 1 : Group Sold Products by the Date 
+
+sol 1:
+
+import pandas as pd
+
+def categorize_products(activities: pd.DataFrame) -> pd.DataFrame:
+    activities=activities.drop_duplicates()
+    df= activities.groupby('sell_date')['product'].nunique().reset_index(name='num_sold')
+    products=activities.groupby('sell_date')['product'].apply(lambda x: ','.join(sorted(x))).reset_index(name='products')
+    result= pd.merge(df,products, on='sell_date')
+    return result.sort_values(by="sell_date")
+
+
+sol 2:
+
+import pandas as pd
+
+def categorize_products(activities: pd.DataFrame) -> pd.DataFrame:
+    activities=activities.drop_duplicates()
+    df= activities.groupby('sell_date')['product'].agg([ ('num_sold', 'nunique'),
+        ('products', lambda x: ','.join(sorted(x)))]).reset_index()
+    return df
+
+
+sol 3:
+
+import pandas as pd
+
+def categorize_products(activities: pd.DataFrame) -> pd.DataFrame:
+    df= activities.groupby('sell_date')['product'].agg([ ('num_sold', 'nunique'),
+        ('products', lambda x: ','.join(sorted(x.unique())))]).reset_index()
+    return df
+
+
+
+sol 4:
+
+import pandas as pd
+
+def categorize_products(activities: pd.DataFrame) -> pd.DataFrame:
+    groups=activities.groupby(['sell_date'])
+    result=groups.agg(
+        num_sold = ('product','nunique'),
+        products = ('product',lambda x: ','.join(sorted(set(x)) ))).reset_index()
+    return result
+
+
+
+
+
+2 Problem 2 : Daily Leads and Partners 
+
+sol 1:
+
+import pandas as pd
+
+def daily_leads_and_partners(daily_sales: pd.DataFrame) -> pd.DataFrame:
+    df =daily_sales.groupby(['date_id','make_name']).agg(
+     unique_leads = ('lead_id','nunique'),
+     unique_partners = ('partner_id','nunique')  
+    ).reset_index()
+    return df
+
+
+
+sol 2:
+
+import pandas as pd
+
+def daily_leads_and_partners(daily_sales: pd.DataFrame) -> pd.DataFrame:
+    df=daily_sales.groupby(['date_id','make_name']).nunique().reset_index()
+    return df.rename(columns={'lead_id':'unique_leads', 'partner_id':'unique_partners'})
+
+
+
+
+
+
+3 Problem 3 : Actors and Directors who Cooperated At Least Three Times 
+
+
+import pandas as pd
+
+def actors_and_directors(actor_director: pd.DataFrame) -> pd.DataFrame:
+    df = actor_director.groupby(['actor_id','director_id']).size().reset_index(name='cnt')
+    result =df[df['cnt']>=3]
+    return result[['actor_id','director_id']]
+
+
